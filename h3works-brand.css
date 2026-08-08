@@ -1,0 +1,120 @@
+.h3-launch-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(255,181,20,.12), transparent 34rem),
+    #0b0b0c;
+  color: #fff;
+  overflow: hidden;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity .54s cubic-bezier(.4,0,.2,1), visibility .54s linear;
+}
+.h3-launch-splash.is-leaving {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.h3-launch-inner {
+  width: min(86vw, 560px);
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  transform: translateY(-2vh);
+}
+.h3-launch-mark {
+  width: clamp(112px, 25vw, 168px);
+  height: auto;
+  filter: drop-shadow(0 20px 40px rgba(245,158,11,.16));
+  opacity: 0;
+  transform: translateY(18px) scale(.84) rotate(-3deg);
+  animation: h3MarkIn .58s cubic-bezier(.2,.78,.22,1) .05s forwards;
+}
+.h3-launch-name {
+  margin-top: 18px;
+  font: 900 clamp(30px, 7vw, 48px)/1 system-ui,-apple-system,"Noto Sans KR",sans-serif;
+  letter-spacing: -.045em;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: h3CopyIn .42s ease .26s forwards;
+}
+.h3-launch-tagline {
+  margin-top: 11px;
+  color: #c8c8ca;
+  font: 700 clamp(9px, 2.3vw, 12px)/1.2 system-ui,-apple-system,sans-serif;
+  letter-spacing: .24em;
+  opacity: 0;
+  transform: translateY(8px);
+  animation: h3CopyIn .4s ease .42s forwards;
+}
+.h3-launch-presents {
+  margin-top: 40px;
+  display: grid;
+  gap: 5px;
+  opacity: 0;
+  transform: translateY(8px);
+  animation: h3CopyIn .4s ease .62s forwards;
+}
+.h3-launch-presents span {
+  color: #8f8f92;
+  font-size: 10px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+.h3-launch-presents strong {
+  font-size: clamp(20px, 5vw, 29px);
+  letter-spacing: -.04em;
+  font-weight: 800;
+}
+@keyframes h3MarkIn { to { opacity:1; transform:translateY(0) scale(1) rotate(0); } }
+@keyframes h3CopyIn { to { opacity:1; transform:translateY(0); } }
+
+.h3-site-credit {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 5px;
+  color: #85877f;
+  font-size: 9px;
+  line-height: 1;
+  letter-spacing: .04em;
+  white-space: nowrap;
+}
+.h3-site-credit svg {
+  width: 12px;
+  height: 12px;
+  display: block;
+  flex: 0 0 auto;
+}
+.h3-site-credit b {
+  color: #5f635d;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+.site-header .brand > span:last-child {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.footer-brand::after {
+  content: 'by H3 WORKS';
+  margin-left: 8px;
+  color: var(--muted, #6e746e);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .h3-launch-mark,.h3-launch-name,.h3-launch-tagline,.h3-launch-presents { animation: none; opacity: 1; transform: none; }
+  .h3-launch-splash { transition-duration: .15s; }
+}
+@media (max-width: 640px) {
+  .h3-launch-presents { margin-top: 32px; }
+  .h3-site-credit { font-size: 8px; }
+  .h3-site-credit svg { width: 11px; height: 11px; }
+  .site-header { min-height: 84px; height: auto; padding-block: 12px; }
+}
