@@ -1,0 +1,99 @@
+name: Import and brand Fridge Chef
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/import-and-brand.yml'
+      - 'branding/**'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: import-and-brand-fridge-chef
+  cancel-in-progress: true
+
+jobs:
+  import-and-brand:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout destination repository
+        uses: actions/checkout@v4
+        with:
+          path: destination
+
+      - name: Checkout legacy source read-only
+        uses: actions/checkout@v4
+        with:
+          repository: H3LUV/extra-innings-take2-preview
+          ref: main
+          path: legacy
+
+      - name: Import latest Fridge Chef web source
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s dotglob
+          cp -R legacy/fridge-chef/* destination/
+          rm -rf destination/android destination/releases destination/test-apk destination/.vercel 2>/dev/null || true
+
+      - name: Apply H3 WORKS brand layer
+        shell: python
+        run: |
+          from pathlib import Path
+
+          root = Path('destination')
+          index = root / 'index.html'
+          text = index.read_text(encoding='utf-8')
+
+          text = text.replace(
+              '<meta name="description" content="냉장고 속 재료를 최대 5개 고르면 자세한 맞춤 레시피 3개를 추천하는 냉털 요리 사이트" />',
+              '<meta name="description" content="냉장고 속 재료를 최대 5개 고르면 자세한 맞춤 레시피 3개를 추천하는 H3 WORKS의 냉털 요리 서비스" />\n  <meta name="author" content="H3 WORKS" />'
+          )
+          text = text.replace(
+              '<title>냉털셰프 | 있는 재료로 근사한 한 끼</title>',
+              '<title>냉털셰프 by H3 WORKS | 있는 재료로 근사한 한 끼</title>'
+          )
+          text = text.replace(
+              '<link rel="stylesheet" href="styles.css" />',
+              '<link rel="stylesheet" href="styles.css" />\n  <link rel="stylesheet" href="h3works-brand.css?v=20260808" />'
+          )
+
+          splash = '''\n  <div class="h3-launch-splash" id="h3LaunchSplash" aria-label="H3 WORKS presents 냉털셰프">\n    <div class="h3-launch-inner">\n      <svg class="h3-launch-mark" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">\n        <path d="M5 29.5 66 6 43 66 33.5 39.5 5 29.5Z" fill="#FFB514"/>\n        <path d="M5 29.5 66 6 26.5 35.7 5 29.5Z" fill="#FFD35A"/>\n        <path d="M33.5 39.5 66 6 27 49.5 17 62 31 53.5 33.5 39.5Z" fill="#F59E0B"/>\n        <path d="M33.5 39.5 66 6 39.2 44.2 33.5 39.5Z" fill="#FFF4C2"/>\n      </svg>\n      <div class="h3-launch-name">H3 WORKS</div>\n      <div class="h3-launch-tagline">MAKE. PLAY. EXPLORE.</div>\n      <div class="h3-launch-presents"><span>presents</span><strong>냉털셰프</strong></div>\n    </div>\n  </div>\n'''
+          text = text.replace('<body>', '<body>' + splash, 1)
+
+          old_brand = '''        <strong>냉털셰프</strong>\n        <small>Fridge to Table</small>'''
+          new_brand = '''        <strong>냉털셰프</strong>\n        <small>Fridge to Table</small>\n        <span class="h3-site-credit" aria-label="H3 WORKS에서 제작">\n          <svg viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M5 29.5 66 6 43 66 33.5 39.5 5 29.5Z" fill="#FFB514"/><path d="M5 29.5 66 6 26.5 35.7 5 29.5Z" fill="#FFD35A"/><path d="M33.5 39.5 66 6 27 49.5 17 62 31 53.5 33.5 39.5Z" fill="#F59E0B"/><path d="M33.5 39.5 66 6 39.2 44.2 33.5 39.5Z" fill="#FFF4C2"/></svg>\n          <span>by <b>H3 WORKS</b></span>\n        </span>'''
+          text = text.replace(old_brand, new_brand, 1)
+
+          text = text.replace(
+              '<small>© 2026 Fridge Chef. Built for leftovers with potential.</small>',
+              '<small>© 2026 Fridge Chef · by H3 WORKS. Built for leftovers with potential.</small>'
+          )
+          text = text.replace(
+              '<script src="app.js" defer></script>',
+              '<script src="app.js" defer></script>\n  <script src="h3works-brand.js?v=20260808" defer></script>'
+          )
+          index.write_text(text, encoding='utf-8')
+
+      - name: Install H3 WORKS brand assets
+        shell: bash
+        run: |
+          cp destination/branding/h3works-brand.css destination/h3works-brand.css
+          cp destination/branding/h3works-brand.js destination/h3works-brand.js
+
+      - name: Commit imported source
+        working-directory: destination
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if git diff --cached --quiet; then
+            echo 'No changes to commit.'
+            exit 0
+          fi
+          git commit -m 'Import Fridge Chef and apply H3 WORKS branding [skip ci]'
+          git push
